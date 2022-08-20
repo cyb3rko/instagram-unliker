@@ -1,15 +1,18 @@
-import os
-import json
 import codecs
+import json
+import os
 from instagram_private_api import Client, ClientError, ClientTwoFactorRequiredError
 
 # =======================================
 
 like_removal_amount = 30
+quiet_mode = False
 username = "YOUR_USERNAME"
 password = "YOUR_PASSWORD"
 
 # =======================================
+
+output = ""
 
 
 class Unliker:
@@ -28,38 +31,40 @@ class Unliker:
         cache_settings = api.settings
         with open(new_settings_file, 'w') as outfile:
             json.dump(cache_settings, outfile, default=self.to_json)
-            print('SAVED: {0!s}'.format(new_settings_file))
+            println("SAVED: {0!s}".format(new_settings_file))
 
     def __init__(self):
         settings_file = "settings.json"
 
         if not os.path.isfile(settings_file):
-            print("Settings file not found, creating new one...")
+            println("Settings file not found, creating new one...")
             self.api = Client(username, password, on_login=lambda x: self.on_login_callback(x, settings_file))
         else:
             with open(settings_file) as file_data:
                 cached_settings = json.load(file_data, object_hook=self.from_json)
-            print("Reusing settings...")
+            println("Reusing settings...")
             self.api = Client(username, password, settings=cached_settings)
 
         try:
-            print("Logging in via username and password...")
+            println("Logging in via username and password...")
             self.api.login()
-            print("Login successful.")
+            println("Login successful.")
         except ClientTwoFactorRequiredError as e:
-            print("Login failed, requiring 2FA!")
+            println("Login failed, requiring 2FA!")
             response = json.loads(e.error_response)
             two_factor_info = response["two_factor_info"]
             phone_number_tail = two_factor_info["obfuscated_phone_number"]
             two_factor_identifier = two_factor_info['two_factor_identifier']
             verification_code = input(f"Verification code of authenticator or SMS (phone number ****{phone_number_tail}): ")
             try:
-                print("Logging in again with 2FA...")
+                println("Logging in again with 2FA...")
                 self.api.login2fa(two_factor_identifier, verification_code)
-                print("Login with 2FA successful.")
+                println("Login with 2FA successful.")
             except ClientError as e:
-                print("Login with 2FA failed as well.")
-                print(e.error_response)
+                println("Login with 2FA failed as well.")
+                println(e.error_response)
+                print(output)
+                exit()
 
     def unlike(self, remove_count):
         removed = 0
@@ -67,25 +72,26 @@ class Unliker:
         while removed < remove_count:
             liked = self.api.feed_liked()
 
-            print('Beginning deletion of liked photos')
+            println("Beginning deletion of liked posts...")
 
             for p in liked['items']:
                 post_id = p['id']
 
                 try:
                     self.api.delete_like(post_id)
-                    print('Deleted', post_id, 'by', p['user']['username'])
+                    println(f"Deleted {post_id} by {p['user']['username']}")
                     removed += 1
                 except Exception as e:
-                    print("\nRate limit most likely reached. Try again soon.")
-                    print("Exception: ")
-                    print(e)
+                    println("\nRate limit most likely reached. Try again soon.")
+                    println("Exception: ")
+                    println(e)
+                    print(output)
                     return
 
                 if removed >= remove_count:
                     break
 
-            print("Grabbing more posts...")
+            println("Grabbing more posts...")
 
             while True:
                 liked = self.api.feed_liked()
@@ -93,13 +99,23 @@ class Unliker:
                     break
 
             result_count = liked['num_results']
-            print(f"Grabbed {result_count} more posts.")
+            println(f"Grabbed {result_count} more posts.")
             if result_count == 0:
                 print("No more posts to unlike.")
+                print(f"Deleted {removed} liked posts.")
                 break
 
-        print(f"Finished deleting {removed} liked photos")
+        print(f"Finished deleting {removed} liked posts.")
 
 
+def println(line):
+    if quiet_mode:
+        global output
+        output += f"\n{line}"
+    else:
+        print(line)
+
+
+print(f"Starting script to delete {like_removal_amount} likes...")
 unliker = Unliker()
 unliker.unlike(like_removal_amount)
