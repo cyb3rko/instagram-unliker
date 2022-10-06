@@ -77,6 +77,7 @@ class Unliker:
 
         while removed < remove_count:
             liked = self.api.feed_liked()
+            count_reached = False
 
             println("Beginning deletion of liked photos...")
 
@@ -90,27 +91,30 @@ class Unliker:
                 except Exception as e:
                     cronitor_ping("complete")
                     println("\nRate limit most likely reached. Try again soon.")
+                    println(f"Deleted {removed} liked posts.")
                     println("Exception: ")
                     println(e)
                     print(output)
                     return
 
                 if removed >= remove_count:
+                    count_reached = True
                     break
 
-            println("Grabbing more posts...")
+            if not count_reached:
+                println("Grabbing more posts...")
 
-            while True:
-                liked = self.api.feed_liked()
-                if liked['status'] == 'ok':
+                while True:
+                    liked = self.api.feed_liked()
+                    if liked['status'] == 'ok':
+                        break
+
+                result_count = liked['num_results']
+                println(f"Grabbed {result_count} more posts.")
+                if result_count == 0:
+                    print("No more posts to unlike.")
+                    print(f"Deleted {removed} liked posts.")
                     break
-
-            result_count = liked['num_results']
-            println(f"Grabbed {result_count} more posts.")
-            if result_count == 0:
-                print("No more posts to unlike.")
-                print(f"Deleted {removed} liked posts.")
-                break
 
         cronitor_ping("complete")
         print(f"Finished deleting {removed} liked posts.")
