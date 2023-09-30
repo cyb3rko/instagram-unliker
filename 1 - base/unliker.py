@@ -80,8 +80,8 @@ class Unliker:
 
                 try:
                     self.api.delete_like(post_id)
-                    println(f"Deleted {post_id} by {p['user']['username']}")
                     removed += 1
+                    println(f"{removed}: Deleted {post_id} by {p['user']['username']}")
                 except Exception as e:
                     println("\nRate limit most likely reached. Try again soon.")
                     println(f"Deleted {removed} liked posts.")
