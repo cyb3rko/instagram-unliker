@@ -3,14 +3,14 @@ from pathlib import Path
 from typing import Dict, List
 from urllib.parse import urlparse
 
-from instagrapir.exceptions import (
+from instagrapi.exceptions import (
     AlbumConfigureError,
     AlbumNotDownload,
     AlbumUnknownFormat,
 )
-from instagrapir.extractors import extract_media_v1
-from instagrapir.types import Location, Media, Usertag
-from instagrapir.utils import date_time_original, dumps
+from instagrapi.extractors import extract_media_v1
+from instagrapi.types import Location, Media, Usertag
+from instagrapi.utils import date_time_original, dumps
 
 
 class DownloadAlbumMixin:
