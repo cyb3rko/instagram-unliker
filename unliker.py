@@ -1,7 +1,8 @@
 import os
-from pathlib import Path
+import pyotp
 
 from instagrapi import Client
+from pathlib import Path
 
 # =======================================
 
@@ -9,6 +10,8 @@ like_removal_amount = 30
 quiet_mode = False
 username = "YOUR_USERNAME"
 password = "YOUR_PASSWORD"
+# format example: BWI7I3TN3PFUUI6TSGJRYCVMI5YKRVO6
+mfa_secret = ""
 
 # =======================================
 
@@ -22,7 +25,12 @@ def init_client() -> Client:
     if not os.path.isfile(settings_file):
         println("Settings file not found, creating one on the fly...")
         println("Logging in via username and password...")
-        client.login(username, password, relogin=True)
+        if mfa_secret is not None and mfa_secret != "":
+            totp = pyotp.TOTP(mfa_secret).now()
+            println(f"Configured TOTP MFA with code '{totp}'")
+            client.login(username, password, verification_code=totp)
+        else:
+            client.login(username, password)
         client.dump_settings(Path("session.json"))
     else:
         println("Session found, reusing login...")
