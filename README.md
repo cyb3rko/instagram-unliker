@@ -6,7 +6,7 @@ Powered by [subzeroid/instagrapi](https://github.com/subzeroid/instagrapi) 💚
 ## 🚧 Rate Limiting
 
 To avoid possible blocking / banning of your account keep the number of posts to unlike at a low level.  
-The [current default value](https://github.com/cyb3rko/instagram-unliker/blob/main/unliker.py#L8) worked fine for me while running this script every few hours.
+The [current default value](https://github.com/cyb3rko/instagram-unliker/blob/main/unliker.py#L9) worked fine for me while running this script every few hours.
 
 ## 🚀 Usage
 
