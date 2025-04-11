@@ -31,7 +31,7 @@ The "classic" way is to use `pip` and `Python` itself.
 3. Run `python -m venv .venv`
 4. Run `source .venv/bin/activate`
 5. Run `pip install -r requirements.txt`
-6. RUn `python unliker.py`
+6. Run `python unliker.py`
 
 ## 🚧 Rate Limiting
 
